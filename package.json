@@ -1,0 +1,19 @@
+{
+  "name": "cli-lib",
+  "version": "0.0.0",
+  "description": "A library to support creation of command line tools with Nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vzaccaria/cli-lib.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vzaccaria/cli-lib/issues"
+  },
+  "homepage": "https://github.com/vzaccaria/cli-lib"
+}
