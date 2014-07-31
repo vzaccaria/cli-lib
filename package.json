@@ -1,6 +1,6 @@
 {
   "name": "cli-lib",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A library to support creation of command line tools with Nodejs",
   "main": "index.js",
   "scripts": {
