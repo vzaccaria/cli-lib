@@ -14,7 +14,7 @@
   q = require('q');
   escape = (shellwords = require("shellwords")).escape;
   optimist = require('optimist');
-  debug = require('debug')('cli-lib.zaccaria.it');
+  debug = require('debug')('it.zaccaria.cli-lib');
   _.mixin(_.str.exports());
   _.str.include('Underscore.string', 'string');
   otm = os.tmpdir != null ? os.tmpdir() : "/var/tmp";
@@ -45,12 +45,12 @@
     return rm('-rf', tempsfx);
   };
   _module = function(){
-    var parlist, argv, state, runT, run, setup, parseArgs, bindir, gracefulExit, toTemp, fromTemp, inTemporaryDirectory, iface;
+    var parlist, argv, state, runT, run, setup, parseArgs, bindir, gracefulExit, toTemp, fromTemp, inTemporaryDirectory, cfx, iface;
     parlist = {};
     argv = {};
     state = {
       name: "NA",
-      description: "NA",
+      description: "",
       author: "Vittorio Zaccaria",
       year: "2014",
       b: function(name, alias, def, description){
@@ -120,11 +120,22 @@
       return argv;
     };
     bindir = function(){
+      var d;
+      d = q.defer();
       if (!state.filename) {
-        throw "Cannot derive absolute package directory";
+        d.reject("Cannot derive absolute package directory");
       } else {
-        return run("dirname `grealpath " + state.filename + "`");
+        fs.realpath(state.filename, function(err, rs){
+          var dn;
+          if (!err) {
+            dn = path.dirname(rs);
+            return d.resolve(dn);
+          } else {
+            return d.reject("Error computing realpath");
+          }
+        });
       }
+      return d.promise;
     };
     gracefulExit = function(){
       if (tempdir != null) {
@@ -149,6 +160,9 @@
       };
       return b().then(moveBack, moveBack);
     };
+    cfx = curry$(function(o, n, s){
+      return path.basename(s, o) + n;
+    });
     iface = {
       setup: setup,
       parseArgs: parseArgs,
@@ -157,9 +171,24 @@
       toTemp: toTemp,
       fromTemp: fromTemp,
       gracefulExit: gracefulExit,
+      escape: escape,
+      cfx: cfx,
       inTemporaryDirectory: inTemporaryDirectory
     };
     return iface;
   };
   module.exports = _module();
+  function curry$(f, bound){
+    var context,
+    _curry = function(args) {
+      return f.length > 1 ? function(){
+        var params = args ? args.concat() : [];
+        context = bound ? context || this : this;
+        return params.push.apply(params, arguments) <
+            f.length && arguments.length ?
+          _curry.call(context, params) : f.apply(context, params);
+      } : f;
+    };
+    return _curry();
+  }
 }).call(this);

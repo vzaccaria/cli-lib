@@ -14,7 +14,7 @@ q = require('q')
 {escape} = shellwords = require("shellwords")
 optimist = require('optimist')
 
-debug = require('debug')('cli-lib.zaccaria.it')
+debug = require('debug')('it.zaccaria.cli-lib')
 
 _.mixin(_.str.exports());
 _.str.include('Underscore.string', 'string');
@@ -57,7 +57,7 @@ _module = ->
 
     state = {
         name        : "NA"
-        description : "NA"
+        description : ""
         author      : "Vittorio Zaccaria"
         year        : "2014"
         
@@ -124,10 +124,17 @@ _module = ->
         return argv
 
     bindir = ->
+            d = q.defer()
             if not state.filename 
-                throw "Cannot derive absolute package directory"
+                d.reject("Cannot derive absolute package directory")
             else 
-                run "dirname `grealpath #{state.filename}`"
+                fs.realpath state.filename, (err, rs) ->
+                    if not err
+                        dn = path.dirname(rs)
+                        d.resolve(dn)
+                    else 
+                        d.reject("Error computing realpath")
+            return d.promise
 
     graceful-exit = -> 
         remove-temporary-directory(tempdir) if tempdir?
@@ -149,6 +156,9 @@ _module = ->
 
         b().then move-back, move-back
 
+    cfx = (o, n, s) -->
+        (path.basename(s, o)) + n
+
 
     iface = { 
         setup                  : setup
@@ -157,7 +167,9 @@ _module = ->
         bindir                 : bindir
         to-temp                : to-temp
         from-temp              : from-temp
-        graceful-exit: graceful-exit
+        graceful-exit          : graceful-exit
+        escape                 : escape
+        cfx : cfx
         in-temporary-directory : in-temporary-directory
     }
   
